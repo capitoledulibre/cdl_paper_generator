@@ -1,0 +1,82 @@
+@page {
+    size: a4 portrait;
+    margin-top: 60px;
+    margin-left: 50px;
+    margin-right: 50px;
+    margin-bottom: 50px;
+}
+
+body {
+    font-size: 23px;
+}
+
+table {
+    display: table;
+    width: 100%;
+    margin-top: 40px;
+    border-collapse: separate;
+    border-width: 1px; 
+    border-style: solid; 
+    border-color: black;
+    border-collapse: collapse;
+}
+
+table tr {
+    display: table-row;
+    height: 10px;
+}
+
+table th {
+    text-align: center;
+}
+
+table th, table td {
+    display: table-cell;
+    border-width: 1px;
+    border-style: solid; 
+    border-color: black;
+}
+
+.room {
+    page-break-before: always;
+}
+
+.conf_title {
+    float: left;
+    width: 195px;
+    color: #F05F40;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-family: 'Open Sans','Helvetica Neue',Arial,sans-serif;
+}
+
+.day_title {
+    float: right;
+    width: 195px;
+    text-transform: capitalize;
+}
+
+.room_title {
+    font-weight: 700;
+    text-align: center;
+}
+
+.event_date {
+    width: 195px;
+    text-align: center;
+}
+
+.event_cell {
+    width: auto;
+    text-align: center;
+}
+
+.event_title {
+    margin-top: 10px;
+    margin-bottom: 12px;
+}
+
+.event_persons {
+    font-style: italic;
+    margin-bottom: 10px;
+}
