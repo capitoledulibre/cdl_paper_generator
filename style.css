@@ -65,6 +65,10 @@ table th, table td {
     margin-top: 25px;
 }
 
+.event_row.pause {
+    background-color: rgba(186, 194, 218, 0.6);
+}
+
 .event_date {
     width: 195px;
     text-align: center;

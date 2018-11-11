@@ -241,6 +241,7 @@ if __name__ == "__main__":
                 p1._start = '12:30'
                 p1._duration = '01:30'
                 p1._persons = {}
+                p1._type = 'pause'
                 day._events[p] = p1
                 p += 1
                 if day._date.isoweekday() != 7:
@@ -250,6 +251,7 @@ if __name__ == "__main__":
                     p2._start = '16:00'
                     p2._duration = '00:30'
                     p2._persons = {}
+                    p2._type = 'pause'
                     day._events[p] = p2
                     p += 1
 
@@ -278,7 +280,7 @@ if __name__ == "__main__":
                         </tr>
                     '''
                 room_html += f'''
-                        <tr class="event_row">
+                        <tr class="event_row {event._type}">
                             <td class="event_date">
                                 {event._start_datetime:%Hh%M}
                                 à
