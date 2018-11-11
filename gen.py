@@ -224,6 +224,8 @@ if __name__ == "__main__":
 
     locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
 
+    p = 9000
+
     html_string = ''
     for day in cdl2018._days.values():
         day_html = ''
@@ -231,6 +233,28 @@ if __name__ == "__main__":
             events = room.get_sorted_list_by_day(day)
             if len(events) == 0:
                 continue
+            # Pauses
+            if room._name != 'Foyer Étudiants':
+                p1 = Event(cdl2018, p, day)
+                p1._room = Room(cdl2018, room._name, day)
+                p1._title = 'Pause déjeuner'
+                p1._start = '12:30'
+                p1._duration = '01:30'
+                p1._persons = {}
+                day._events[p] = p1
+                p += 1
+                if day._date.isoweekday() != 7:
+                    p2 = Event(cdl2018, p, day)
+                    p2._room = Room(cdl2018, room._name, day)
+                    p2._title = 'Pause'
+                    p2._start = '16:00'
+                    p2._duration = '00:30'
+                    p2._persons = {}
+                    day._events[p] = p2
+                    p += 1
+
+            # Refresh list
+            events = room.get_sorted_list_by_day(day)
             room_html = f'''
             <div class="room">
                 <header>
@@ -264,9 +288,14 @@ if __name__ == "__main__":
                                 <div class="event_title">
                                     {event.title}
                                 </div>
-                                <div class="event_persons">
-                                    {event.persons}
-                                </div>
+                '''
+                if len(event._persons.values()) > 0:
+                    room_html += f'''
+                                    <div class="event_persons">
+                                        {event.persons}
+                                    </div>
+                    '''
+                room_html += f'''
                             </td>
                         </tr>
                 '''
