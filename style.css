@@ -82,6 +82,7 @@ table th, table td {
 .event_title {
     margin-top: 10px;
     margin-bottom: 12px;
+    font-weight: 700;
 }
 
 .event_persons {
