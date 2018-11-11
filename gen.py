@@ -234,7 +234,7 @@ if __name__ == "__main__":
             room_html = f'''
             <div class="room">
                 <header>
-                    <div class="conf_title">Capitole du Libre 2018</div>
+                    <div class="conf_title"><!-- Capitole du Libre 2018 --></div>
                     <div class="day_title">{day._date:%A %d %B}</div>
                     <div class="room_title">Salle {room}</div>
                 </header>

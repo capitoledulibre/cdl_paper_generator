@@ -1,5 +1,5 @@
 @page {
-    size: a4 portrait;
+    size: a3 portrait;
     margin-top: 60px;
     margin-left: 50px;
     margin-right: 50px;
@@ -7,13 +7,13 @@
 }
 
 body {
-    font-size: 23px;
+    font-size: 27px;
+    font-family: 'Helvetica', 'Arial', sans-serif;
 }
 
 table {
     display: table;
     width: 100%;
-    margin-top: 40px;
     border-collapse: separate;
     border-width: 1px; 
     border-style: solid; 
@@ -42,23 +42,27 @@ table th, table td {
 }
 
 .conf_title {
+    display: block;
     float: left;
     width: 195px;
-    color: #F05F40;
-    font-weight: 700;
-    text-transform: uppercase;
-    font-family: 'Open Sans','Helvetica Neue',Arial,sans-serif;
+    height: 85px;
+    margin-top: -25px;
+    margin-bottom: 1.7em;
+    background: url('cdl.svg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
 }
 
 .day_title {
     float: right;
-    width: 195px;
     text-transform: capitalize;
 }
 
 .room_title {
     font-weight: 700;
     text-align: center;
+    margin-top: 25px;
 }
 
 .event_date {
