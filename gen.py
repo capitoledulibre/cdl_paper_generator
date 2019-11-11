@@ -1,5 +1,6 @@
 
 import locale
+import os
 from datetime import datetime, timedelta
 from urllib.request import urlopen
 from xml.etree import ElementTree
@@ -313,4 +314,10 @@ if __name__ == "__main__":
 
     html = HTML(string=html_string)
     css = CSS(filename='style.css')
-    html.write_pdf('conference.pdf', stylesheets=[css])
+    file_name = 'conference.pdf'
+    try:
+        os.remove(file_name)
+    except FileNotFoundError:
+        pass
+
+    html.write_pdf(file_name, stylesheets=[css])
