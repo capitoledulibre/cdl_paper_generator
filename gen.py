@@ -218,49 +218,51 @@ class Person(UniqueByConference):
 
 
 if __name__ == "__main__":
-    cdl2018 = Conference(
-        url='https://participez-2018.capitoledulibre.org/schedule/xml/')
-    cdl2018.parse()
+    conference = Conference(
+        url='https://participez-2019.capitoledulibre.org/schedule/xml/')
+    conference.parse()
 
     locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
 
     p = 9000
 
     html_string = ''
-    for day in cdl2018._days.values():
+    for day in conference._days.values():
         day_html = ''
         for room in day._rooms.values():
             events = room.get_sorted_list_by_day(day)
             if len(events) == 0:
                 continue
             # Pauses
-            if room._name != 'Foyer Étudiants':
-                p1 = Event(cdl2018, p, day)
-                p1._room = Room(cdl2018, room._name, day)
-                p1._title = 'Pause déjeuner'
-                p1._start = '12:30'
-                p1._duration = '01:30'
-                p1._persons = {}
-                p1._type = 'pause'
-                day._events[p] = p1
+            if room._name == 'Foyer des Étudiants':
+                continue
+
+            p1 = Event(conference, p, day)
+            p1._room = Room(conference, room._name, day)
+            p1._title = 'Pause déjeuner'
+            p1._start = '12:30'
+            p1._duration = '01:30'
+            p1._persons = {}
+            p1._type = 'pause'
+            day._events[p] = p1
+            p += 1
+            if day._date.isoweekday() != 7:
+                p2 = Event(conference, p, day)
+                p2._room = Room(conference, room._name, day)
+                p2._title = 'Pause'
+                p2._start = '16:00'
+                p2._duration = '00:30'
+                p2._persons = {}
+                p2._type = 'pause'
+                day._events[p] = p2
                 p += 1
-                if day._date.isoweekday() != 7:
-                    p2 = Event(cdl2018, p, day)
-                    p2._room = Room(cdl2018, room._name, day)
-                    p2._title = 'Pause'
-                    p2._start = '16:00'
-                    p2._duration = '00:30'
-                    p2._persons = {}
-                    p2._type = 'pause'
-                    day._events[p] = p2
-                    p += 1
 
             # Refresh list
             events = room.get_sorted_list_by_day(day)
             room_html = f'''
             <div class="room">
                 <header>
-                    <div class="conf_title"><!-- Capitole du Libre 2018 --></div>
+                    <div class="conf_title"><!-- Capitole du Libre 2019 --></div>
                     <div class="day_title">{day._date:%A %d %B}</div>
                     <div class="room_title">Salle {room}</div>
                 </header>
@@ -311,4 +313,4 @@ if __name__ == "__main__":
 
     html = HTML(string=html_string)
     css = CSS(filename='style.css')
-    html.write_pdf('cdl2018.pdf', stylesheets=[css])
+    html.write_pdf('conference.pdf', stylesheets=[css])
