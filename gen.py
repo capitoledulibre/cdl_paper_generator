@@ -2,6 +2,8 @@
 import locale
 import os
 from datetime import datetime, timedelta
+from pprint import pprint
+from typing import Dict
 from urllib.request import urlopen
 from xml.etree import ElementTree
 
@@ -17,6 +19,8 @@ class UniqueByConference(object):
         instance_id = (conference, attr)
         if cls._instances.get(instance_id, None) is None:
             cls._instances[instance_id] = super().__new__(cls)
+            if hasattr(cls._instances[instance_id], 'init'):
+                cls._instances[instance_id].init()
         return cls._instances[instance_id]
 
     def __init__(self, conference, attr):
@@ -26,6 +30,7 @@ class UniqueByConference(object):
 class Conference(object):
     def __init__(self, url):
         self._url = url
+        self._days: Dict[datetime, Day] = {}
 
     def __str__(self):
         return self._title
@@ -55,18 +60,15 @@ class Conference(object):
         remote = urlopen(self._url)
         tree = ElementTree.parse(remote)
         root_element = tree.getroot()
-        for element in root_element.getchildren():
+        for element in list(root_element):
             if element.tag == 'conference':
-                for element_details in element.getchildren():
-                    setattr(self,
-                            f'_{element_details.tag}',
-                            element_details.text)
+                for element_details in list(element):
+                    if element_details.tag in ['title', 'venue', 'city', 'start_date', 'end_date', 'days_count']:
+                        setattr(self,
+                                f'_{element_details.tag}',
+                                element_details.text)
             elif element.tag == 'day':
                 date = datetime.strptime(element.get('date'), '%Y-%m-%d')
-                if getattr(self,
-                           '_days',
-                           None) is None:
-                    self._days = {}
                 self._days[date] = Day(self, date)
                 self._days[date].parse(element)
             else:
@@ -74,62 +76,51 @@ class Conference(object):
 
 
 class Day(UniqueByConference):
-    def __init__(self, conference, date):
+    def __init__(self, conference: Conference, date: datetime):
         super().__init__(conference, date)
         self._date = date
+
+    def init(self):
+        self._rooms: Dict[str, Room] = {}
 
     @property
     def _persons(self):
         persons = {}
-        for event in self._events.values():
-            persons.update(event._persons.items())
+        for room in self._rooms.values():
+            for event in room._events.values():
+                persons.update(event._persons.items())
         return persons
 
     def parse(self, day_element):
-        for element in day_element.getchildren():
+        for element in list(day_element):
             if element.tag == 'room':
                 room_name = element.get('name')
-                if getattr(self,
-                           '_rooms',
-                           None) is None:
-                    self._rooms = {}
                 self._rooms[room_name] = Room(
                     self._conference,
                     room_name,
                     self)
-                self._rooms[room_name].parse(element)
-            elif element.tag == 'event':
-                event_id = element.get('id')
-                if getattr(self,
-                           '_events',
-                           None) is None:
-                    self._events = {}
-                self._events[event_id] = Event(
-                    self._conference,
-                    event_id,
-                    self)
-                self._events[event_id].parse(element)
+                self._rooms[room_name].parse(element, self)
 
 
 class Room(UniqueByConference):
-    def __init__(self, conference, name, day):
+    def __init__(self, conference: Conference, name: str, day: Day):
         super().__init__(conference, name)
         self._name = name
-        if getattr(self,
-                   '_days',
-                   None) is None:
-            self._days = {}
         self._days[day._date] = day
+
+    def init(self):
+        self._days: Dict[datetime, Day] = {}
+        self._events: Dict[str, Event] = {}
 
     def __str__(self):
         return self._name
 
     def get_events_by_day(self, day):
         events = {}
-        for event in day._events.values():
-            if event._room is not self:
-                continue
-            events[event._id] = event
+        for event in self._events.values():
+            if event._day is day:
+                events[event._id] = event
+
         return events
 
     def get_sorted_list_by_day(self, day):
@@ -137,15 +128,25 @@ class Room(UniqueByConference):
         events.sort(key=lambda e: e._start_datetime)
         return events
 
-    def parse(self, room_element):
-        pass
+    def parse(self, room_element, day: Day):
+        for element in list(room_element):
+            if element.tag == 'event':
+                event_id = element.get('id')
+                self._events[event_id] = Event(
+                    self._conference,
+                    event_id,
+                    day)
+                self._events[event_id].parse(element)
 
 
 class Event(UniqueByConference):
-    def __init__(self, conference, event_id, day):
+    def __init__(self, conference, event_id, day: Day):
         super().__init__(conference, event_id)
         self._id = event_id
-        self._day = day
+        self._day: Day = day
+
+    def init(self):
+        self._persons: Dict[str, Person] = {}
 
     def _str__(self):
         return self._title
@@ -180,21 +181,15 @@ class Event(UniqueByConference):
         return names[0]
 
     def parse(self, event_element):
-        for element in event_element.getchildren():
-            if element.tag == 'person':
-                person_id = element.get('id')
-                if getattr(self,
-                           '_persons',
-                           None) is None:
-                    self._persons = {}
-                self._persons[person_id] = Person(
-                    self._conference,
-                    person_id,
-                    self)
-                self._persons[person_id].parse(element)
-            elif element.tag == 'room':
-                room_name = element.text
-                self._room = Room(self._conference, room_name, self._day)
+        for element in list(event_element):
+            if element.tag == 'persons':
+                for person_element in list(element):
+                    person_id = person_element.get('id')
+                    self._persons[person_id] = Person(
+                        self._conference,
+                        person_id,
+                        self)
+                    self._persons[person_id].parse(person_element)
             else:
                 setattr(self,
                         f'_{element.tag}',
@@ -202,7 +197,7 @@ class Event(UniqueByConference):
 
 
 class Person(UniqueByConference):
-    def __init__(self, conference, person_id, event):
+    def __init__(self, conference: Conference, person_id, event: Event):
         super().__init__(conference, person_id)
         self._id = person_id
         if getattr(self,
@@ -220,10 +215,10 @@ class Person(UniqueByConference):
 
 if __name__ == "__main__":
     conference = Conference(
-        url='https://participez-2019.capitoledulibre.org/schedule/xml/')
+        url='https://cfp.capitoledulibre.org/cdl-2022/schedule/export/schedule.xml')
     conference.parse()
 
-    locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
+    locale.setlocale(locale.LC_ALL, 'en_US.utf8')
 
     p = 9000
 
@@ -238,25 +233,25 @@ if __name__ == "__main__":
             if room._name == 'Foyer des Étudiants':
                 continue
 
-            p1 = Event(conference, p, day)
-            p1._room = Room(conference, room._name, day)
-            p1._title = 'Pause déjeuner'
-            p1._start = '12:30'
-            p1._duration = '01:30'
-            p1._persons = {}
-            p1._type = 'pause'
-            day._events[p] = p1
-            p += 1
-            if day._date.isoweekday() != 7:
-                p2 = Event(conference, p, day)
-                p2._room = Room(conference, room._name, day)
-                p2._title = 'Pause'
-                p2._start = '16:00'
-                p2._duration = '00:30'
-                p2._persons = {}
-                p2._type = 'pause'
-                day._events[p] = p2
-                p += 1
+            # p1 = Event(conference, p, day)
+            # p1._room = Room(conference, room._name, day)
+            # p1._title = 'Pause déjeuner'
+            # p1._start = '12:30'
+            # p1._duration = '01:30'
+            # p1._persons = {}
+            # p1._type = 'pause'
+            # day._events[p] = p1
+            # p += 1
+            # if day._date.isoweekday() != 7:
+            #     p2 = Event(conference, p, day)
+            #     p2._room = Room(conference, room._name, day)
+            #     p2._title = 'Pause'
+            #     p2._start = '16:00'
+            #     p2._duration = '00:30'
+            #     p2._persons = {}
+            #     p2._type = 'pause'
+            #     day._events[p] = p2
+            #     p += 1
 
             # Refresh list
             events = room.get_sorted_list_by_day(day)
