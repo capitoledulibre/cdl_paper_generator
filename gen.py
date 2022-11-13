@@ -218,9 +218,7 @@ if __name__ == "__main__":
         url='https://cfp.capitoledulibre.org/cdl-2022/schedule/export/schedule.xml')
     conference.parse()
 
-    locale.setlocale(locale.LC_ALL, 'en_US.utf8')
-
-    p = 9000
+    locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
 
     html_string = ''
     for day in conference._days.values():
@@ -233,25 +231,23 @@ if __name__ == "__main__":
             if room._name == 'Foyer des Étudiants':
                 continue
 
-            # p1 = Event(conference, p, day)
-            # p1._room = Room(conference, room._name, day)
-            # p1._title = 'Pause déjeuner'
-            # p1._start = '12:30'
-            # p1._duration = '01:30'
-            # p1._persons = {}
-            # p1._type = 'pause'
-            # day._events[p] = p1
-            # p += 1
-            # if day._date.isoweekday() != 7:
-            #     p2 = Event(conference, p, day)
-            #     p2._room = Room(conference, room._name, day)
-            #     p2._title = 'Pause'
-            #     p2._start = '16:00'
-            #     p2._duration = '00:30'
-            #     p2._persons = {}
-            #     p2._type = 'pause'
-            #     day._events[p] = p2
-            #     p += 1
+            p1 = Event(conference, 9000, day)
+            p1._room = Room(conference, room._name, day)
+            p1._title = 'Pause déjeuner'
+            p1._start = '12:30'
+            p1._duration = '01:30'
+            p1._persons = {}
+            p1._type = 'pause'
+            room._events[p1._id] = p1
+            if day._date.isoweekday() != 7:
+                p2 = Event(conference, 9001, day)
+                p2._room = Room(conference, room._name, day)
+                p2._title = 'Pause'
+                p2._start = '16:00'
+                p2._duration = '00:30'
+                p2._persons = {}
+                p2._type = 'pause'
+                room._events[p2._id] = p2
 
             # Refresh list
             events = room.get_sorted_list_by_day(day)
