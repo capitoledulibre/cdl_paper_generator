@@ -215,10 +215,10 @@ class Person(UniqueByConference):
 
 if __name__ == "__main__":
     conference = Conference(
-        url='https://cfp.capitoledulibre.org/cdl-2022/schedule/export/schedule.xml')
+        url='https://cfp.capitoledulibre.org/cdl-2023/schedule/export/schedule.xml')
     conference.parse()
 
-    locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
+    #locale.setlocale(locale.LC_ALL, 'fr_FR.utf8')
 
     html_string = ''
     for day in conference._days.values():
