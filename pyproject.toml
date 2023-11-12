@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "cdl-paper-generator"
+version = "0.1.0"
+description = "Capitole du Libre Paper Schedule Generator"
+authors = ["Capitole du Libre <contact@capitoledulibre.org>"]
+license = "Apache 2"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+weasyprint = "*"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
